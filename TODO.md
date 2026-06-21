@@ -1,0 +1,5 @@
+- [ ] Add admin endpoint to list all users where `type === "customer"`
+- [ ] Protect endpoint with `fetchadminusertoken` + `requireAdmin`
+- [ ] Return users with `-password` projection
+- [ ] Mount endpoint under `/api/admin` in `src/app.js` (if needed)
+- [ ] Smoke test by hitting endpoint with admin token
