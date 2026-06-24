@@ -11,17 +11,14 @@ const CategorySchema = require("../models/category");
 const CatalogScheme = require("../models/catalog");
 // fetch all Categories
 
-router.get("/getProducts/:id", fetchuser, async (req, res) => {
+router.get("/getProducts", fetchuser, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ status: "Failed", errors: errors.array() });
   }
   try {
     console.log(req);
-    let staff = await ProductSchema.find({
-      userid: req.user.id,
-      c_id: req.params.id,
-    }).populate("cat_id");
+    let staff = await ProductSchema.find({}).populate("cat_id");
 
     console.log(staff);
     if (staff.length == 0) {
@@ -51,8 +48,6 @@ router.get("/getSaleProducts/:id", fetchuser, async (req, res) => {
     console.log(req.user.id);
     console.log(req.params.id);
     const staff = await ProductSchema.find({
-      userid: req.user.id,
-      c_id: req.params.id,
       product_type: "published",
     }).populate("cat_id");
     console.log(staff);
@@ -70,12 +65,11 @@ router.get("/getSaleProducts/:id", fetchuser, async (req, res) => {
     }
   } catch (e) {
     res.json({
-        status: "Failed",
-        errors: e.message,
-      });
+      status: "Failed",
+      errors: e.message,
+    });
     console.log(e.message);
     console.log(req.user);
-    
   }
 });
 // get only ware house product
@@ -87,8 +81,6 @@ router.get("/getGodownProducts/:id", fetchuser, async (req, res) => {
   }
   //console.log(req.user.id);
   const staff = await ProductSchema.find({
-    userid: req.user.id,
-    c_id: req.params.id,
     product_type: "warehouse",
   }).populate("cat_id");
 
@@ -114,10 +106,14 @@ router.post(
   [
     body("cat_id", "Enter a Category Id").isLength({ min: 3 }),
     body("p_name", "Enter product Name").isLength({ min: 2 }),
-    body("c_id", "Enter Company Id").isLength({ min: 2 }),
+
     body("unit_name", "Enter Unit Name").isLength({ min: 1 }),
     body("location", "Enter Location").isLength({ min: 3 }),
+    body("model_name", "Enter Model Name").isLength({ min: 1 }),
+    body("year_val", "Enter Year").isNumeric(),
+    body("variant_name", "Enter Variant Name").isLength({ min: 1 }),
   ],
+
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -125,10 +121,14 @@ router.post(
     }
 
     let {
-      c_id,
       cat_id,
-      sub_cat_id,
+      model_name,
+
+      year_val,
+      variant_name,
+
       brand,
+
       location,
       product_type,
       accept_order,
@@ -169,16 +169,18 @@ router.post(
           .json({ status: "Failed", msg: "Invalid Category Id" });
       }
 
-      userid = req.user.id;
       cat_id = new mongoose.Types.ObjectId(category._id);
       console.log(cat_id);
       const newProduct = new ProductSchema({
-        userid,
-        c_id,
         cat_id,
-        sub_cat_id,
+
+        model_name,
+
+        year_val,
+        variant_name,
         accept_order,
         unit_name,
+
         unit_value,
         p_name,
         brand,

@@ -2,14 +2,6 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const productSchema = new Schema({
-  userid: {
-    type: String,
-    required: true,
-  },
-  c_id: {
-    type: Schema.Types.ObjectId,
-    required: true,
-  },
   cat_id: {
     type: Schema.Types.ObjectId,
     ref: "category",
@@ -23,11 +15,21 @@ const productSchema = new Schema({
     type: Number,
     required: true,
   },
-  sub_cat_id: {
+  model_name: {
     type: String,
     required: true,
     trim: true,
   },
+  year_val: {
+    type: Number,
+    required: true,
+  },
+  variant_name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+
   p_name: {
     type: String,
     required: true,
@@ -133,10 +135,15 @@ const productSchema = new Schema({
 });
 // we are createing new collection
 // Hot queries
-productSchema.index({ userid: 1, c_id: 1 });
-productSchema.index({ userid: 1, c_id: 1, product_type: 1 });
+
 productSchema.index({ cat_id: 1 });
 productSchema.index({ p_sku: 1 });
+productSchema.index({
+  cat_id: 1,
+  model_name: 1,
+  year_val: 1,
+  variant_name: 1,
+});
 
 const ProductSchema = new mongoose.model("product", productSchema);
 module.exports = ProductSchema;
