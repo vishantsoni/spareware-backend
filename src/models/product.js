@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const productSchema = new Schema({
   cat_id: {
     type: Schema.Types.ObjectId,
-    ref: "category",
+    ref: "Category",
     required: true,
   },
   unit_name: {
@@ -46,6 +46,7 @@ const productSchema = new Schema({
   product_type: {
     type: String, //warehouse, published
     trim: true,
+    default: "published",
   },
   p_sku: {
     type: String,
@@ -92,26 +93,27 @@ const productSchema = new Schema({
     trim: true,
     required: true,
   },
-  // per packet product
-  pkg: {
+  part_number: {
     type: String,
     required: true,
     trim: true,
   },
-  pkg_unit: {
-    type: String,
-    trim: true,
-  },
-  // master packaging
-  mpkg: {
+  short_description: {
     type: String,
     required: true,
     trim: true,
   },
-  mpkg_unit: {
-    type: String,
-    trim: true,
+
+  // Features / Specification
+  features: {
+    specification: {
+      country_of_origin: { type: String, required: true, trim: true },
+      manufacturer_address: { type: String, required: true, trim: true },
+      oem_part_no: { type: String, required: true, trim: true },
+      net_quantity: { type: String, required: true, trim: true },
+    },
   },
+
   description: {
     type: String,
     required: true,

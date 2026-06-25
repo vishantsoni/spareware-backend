@@ -11,6 +11,12 @@ const categorySchema = new Schema({
     required: true,
     trim: true,
   },
+  // Category icon for segment-category UI
+  icon: {
+    type: String, // store public URL, e.g. http(s)://host/media/cat-imageAction/<file>
+    default: "",
+  },
+
   // Deeply nested sub-items to support the complete flow
   sub_items: [
     {

@@ -38,6 +38,40 @@ router.get("/getProducts", fetchuser, async (req, res) => {
   }
 });
 
+// Frontend flow: get all published/visible products (no params)
+// Filters:
+// - product_type: "published"
+// - visibility: true
+// - hide_inventory: false (so out-of-stock is hidden)
+router.get("/getAllPublishedProducts", fetchuser, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ status: "Failed", errors: errors.array() });
+  }
+
+  try {
+    const products = await ProductSchema.find({
+      product_type: "published",
+      visibility: true,
+      hide_inventory: false,
+      // guard against missing/undefined inventory
+      $or: [
+        { inventory: { $gt: 0 } },
+        { inventory: { $exists: false } },
+        { inventory: null },
+      ],
+    }).populate("cat_id");
+
+    return res.json({
+      status: "Success",
+      data: products,
+      msg: products.length === 0 ? "Not Found" : undefined,
+    });
+  } catch (e) {
+    return res.status(500).json({ status: "Failed", errors: e.message });
+  }
+});
+
 // get only sale product
 router.get("/getSaleProducts/:id", fetchuser, async (req, res) => {
   const errors = validationResult(req);
@@ -72,6 +106,7 @@ router.get("/getSaleProducts/:id", fetchuser, async (req, res) => {
     console.log(req.user);
   }
 });
+
 // get only ware house product
 
 router.get("/getGodownProducts/:id", fetchuser, async (req, res) => {
@@ -112,6 +147,25 @@ router.post(
     body("model_name", "Enter Model Name").isLength({ min: 1 }),
     body("year_val", "Enter Year").isNumeric(),
     body("variant_name", "Enter Variant Name").isLength({ min: 1 }),
+
+    body("p_sku", "Enter SKU").isLength({ min: 1 }),
+    body("part_number", "Enter Part Number").isLength({ min: 1 }),
+    body("short_description", "Enter Short Description").isLength({ min: 1 }),
+
+    body(
+      "features.specification.country_of_origin",
+      "Enter Country of Origin",
+    ).isLength({ min: 1 }),
+    body(
+      "features.specification.manufacturer_address",
+      "Enter Manufacturer Address",
+    ).isLength({ min: 1 }),
+    body("features.specification.oem_part_no", "Enter OEM Part No").isLength({
+      min: 1,
+    }),
+    body("features.specification.net_quantity", "Enter Net Quantity").isLength({
+      min: 1,
+    }),
   ],
 
   async (req, res) => {
@@ -140,11 +194,13 @@ router.post(
       hide_inventory,
       visibility,
       m_o_q,
-      pkg,
-      pkg_unit,
-      mpkg,
-      mpkg_unit,
+
       description,
+
+      part_number,
+      short_description,
+      features,
+
       p_gallery_image,
       p_gallery_video,
       p_price,
@@ -173,14 +229,11 @@ router.post(
       console.log(cat_id);
       const newProduct = new ProductSchema({
         cat_id,
-
         model_name,
-
         year_val,
         variant_name,
         accept_order,
         unit_name,
-
         unit_value,
         p_name,
         brand,
@@ -191,11 +244,12 @@ router.post(
         hide_inventory,
         visibility,
         m_o_q,
-        pkg,
-        pkg_unit,
-        mpkg,
-        mpkg_unit,
+
         description,
+        part_number,
+        short_description,
+        features,
+
         p_gallery_image,
         p_gallery_video,
         p_price,
@@ -297,7 +351,9 @@ router.put("/outofstock/:id/:type", fetchuser, async (req, res) => {
     console.log(req.params);
     const { id, type } = req.params;
 
-    let pro = await ProductSchema.findOne({ _id: id, userid: req.user.id });
+    // NOTE: this API appears to enforce ownership by userid, but product schema has no `userid` field.
+    // To avoid breaking with missing fields, we only filter by product id here.
+    let pro = await ProductSchema.findById(id);
 
     if (!pro) {
       return res

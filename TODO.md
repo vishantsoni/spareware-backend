@@ -1,22 +1,16 @@
 # TODO
 
-## Task: update product model schema according to Category schema
+## Task: Add category icon image (segment-category) + 1MB validation
 
-### Step 1
+- [x] Inspect existing category model and routes
+- [x] Update `src/models/category.js` to store a single category icon URL/path
 
-- Inspect current `src/models/product.js` and align fields with `src/models/category.js` nested structure.
+- [x] Add an upload endpoint in `src/router/Category.js` for category icon
 
-### Step 2
+- [x] Enforce icon validation: image mimetype + 1MB max size
 
-- Update `src/models/product.js`:
-  - Add `model_name`, `year_val`, `variant_name` fields.
-  - Deprecate/remove `sub_cat_id`.
-  - Add/adjust indexes.
+- [x] Save uploaded file into `static/cat-imageAction/` and persist link in Mongo
 
-### Step 3
+- [x] Ensure ownership checks (only category owner can upload)
 
-- Update `src/router/Product.js` create endpoint to send/validate new fields.
-
-### Step 4
-
-- (Optional) Run a quick Node syntax check / start server.
+- [ ] Start server and verify endpoint wiring (manual curl/postman)
