@@ -1,16 +1,9 @@
 # TODO
 
-## Task: Add category icon image (segment-category) + 1MB validation
+- [x] Remove `c_id` from `src/models/catalog.js` schema and related indexes.
+- [ ] Update `src/router/Catalog.js`
+  - [x] Change `GET /getCatalog/:id` to fetch by catalog `_id` with `userid` ownership check.
+  - [x] Add `GET /getCatalog` to list all catalogs for the logged-in user.
+  - [x] Update `POST /createCatalog` to stop requiring/using `c_id`.
 
-- [x] Inspect existing category model and routes
-- [x] Update `src/models/category.js` to store a single category icon URL/path
-
-- [x] Add an upload endpoint in `src/router/Category.js` for category icon
-
-- [x] Enforce icon validation: image mimetype + 1MB max size
-
-- [x] Save uploaded file into `static/cat-imageAction/` and persist link in Mongo
-
-- [x] Ensure ownership checks (only category owner can upload)
-
-- [ ] Start server and verify endpoint wiring (manual curl/postman)
+- [x] Quick sanity check by running node server (if available) and verifying routes.

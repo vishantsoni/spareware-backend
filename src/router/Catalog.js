@@ -4,20 +4,16 @@ const router = express.Router();
 const fetchuser = require("../middleware/fetchusertoken");
 const { body, validationResult } = require("express-validator");
 const CatalogScheme = require("../models/catalog");
-const Company = require("../models/company");
+
 // fetch all Categories
 
 router.get("/getCatalog/:id", fetchuser, async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ status: "Failed", errors: errors.array() });
-  }
-
   try {
-    const staff = await CatalogScheme.find({
+    const staff = await CatalogScheme.findOne({
+      _id: req.params.id,
       userid: req.user.id,
-      c_id: req.params.id,
     });
+
     // .populate({
     //   path:'products',
     //   populate:{
@@ -25,18 +21,32 @@ router.get("/getCatalog/:id", fetchuser, async (req, res) => {
     //   }
     // })
 
-    if (staff.length == 0) {
-      res.json({
+    if (!staff) {
+      return res.json({
         status: "Success",
         msg: "Not Found",
-        data: staff,
-      });
-    } else {
-      res.json({
-        status: "Success",
-        data: staff,
+        data: null,
       });
     }
+
+    return res.json({
+      status: "Success",
+      data: staff,
+    });
+  } catch (e) {
+    return res
+      .status(203)
+      .json({ status: "Failed", msg: "Invalid Parameters", errors: e.message });
+  }
+});
+
+router.get("/getCatalog", fetchuser, async (req, res) => {
+  try {
+    const catalogs = await CatalogScheme.find({ userid: req.user.id });
+    return res.json({
+      status: "Success",
+      data: catalogs,
+    });
   } catch (e) {
     return res
       .status(203)
@@ -102,10 +112,8 @@ router.get("/getCatalogBySeller/:id", fetchuser, async (req, res) => {
 router.post(
   "/createCatalog",
   fetchuser,
-  [
-    body("catalog_name", "Enter a Catalog  Name").isLength({ min: 3 }),
-    body("c_id", "Invalid Company Id").isLength({ min: 24 }),
-  ],
+  [body("catalog_name", "Enter a Catalog  Name").isLength({ min: 3 })],
+
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -117,7 +125,6 @@ router.post(
     }
 
     const {
-      c_id,
       catalog_name,
       nick_name,
       flattDiscount,
@@ -127,19 +134,10 @@ router.post(
     } = req.body;
 
     try {
-      let company = await Company.findOne({
-        _id: req.body.c_id,
-      });
-
-      if (!company) {
-        return res
-          .status(202)
-          .json({ status: "Failed", msg: "Invalid Company Id" });
-      }
-
       let Catalog = await CatalogScheme.findOne({
         catalog_name: req.body.catalog_name,
       });
+
       if (Catalog) {
         return res
           .status(201)
@@ -149,7 +147,6 @@ router.post(
       userid = req.user.id;
       const newCatalog = new CatalogScheme({
         userid,
-        c_id,
         catalog_name,
         nick_name,
         flattDiscount,
@@ -200,7 +197,8 @@ router.delete("/deleteCatalog/:id", fetchuser, async (req, res) => {
 // update catalog
 router.put("/updateCatalog/:id", fetchuser, async (req, res) => {
   try {
-    console.log(req.body);
+    const { catalog_name, customers, discount, flattDiscount, products } =
+      req.body;
     let catalog = await CatalogScheme.findById(req.params.id);
     if (!catalog) {
       return res
@@ -208,7 +206,24 @@ router.put("/updateCatalog/:id", fetchuser, async (req, res) => {
         .json({ status: "Failed", msg: "catalog not found" });
     }
 
-    catalog.customers = req.body;
+    if (products) {
+      catalog.products = products;
+    }
+    if (customers) {
+      catalog.customers = customers;
+    }
+
+    if (catalog_name) {
+      catalog.catalog_name = catalog_name;
+    }
+
+    if (discount) {
+      catalog.discount = discount;
+    }
+
+    if (flattDiscount) {
+      catalog.flattDiscount = flattDiscount;
+    }
 
     const updateCatalog = await CatalogScheme.findByIdAndUpdate(
       req.params.id,

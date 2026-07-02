@@ -7,11 +7,7 @@ const catalogScheme = new Schema({
     ref: "user",
     required: true,
   },
-  c_id: {
-    type: Schema.Types.ObjectId,
-    ref: "company",
-    required: true,
-  },
+
   catalog_name: {
     type: String,
     required: true,
@@ -47,7 +43,8 @@ const catalogScheme = new Schema({
 });
 // we are createing new collection
 // Hot queries
-catalogScheme.index({ userid: 1, c_id: 1 });
+catalogScheme.index({ userid: 1 });
+
 catalogScheme.index({ "customers.cus_id": 1 });
 catalogScheme.index({ catalog_name: 1 });
 

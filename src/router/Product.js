@@ -17,10 +17,8 @@ router.get("/getProducts", fetchuser, async (req, res) => {
     return res.status(400).json({ status: "Failed", errors: errors.array() });
   }
   try {
-    console.log(req);
     let staff = await ProductSchema.find({}).populate("cat_id");
 
-    console.log(staff);
     if (staff.length == 0) {
       res.json({
         status: "Success",
@@ -347,8 +345,8 @@ router.post("/uploadProductImage/:id", fetchuser, async (req, res) => {
 
 router.put("/outofstock/:id/:type", fetchuser, async (req, res) => {
   try {
-    console.log("----------------------------------");
-    console.log(req.params);
+    // console.log("----------------------------------");
+    // console.log(req.params);
     const { id, type } = req.params;
 
     // NOTE: this API appears to enforce ownership by userid, but product schema has no `userid` field.
@@ -380,8 +378,8 @@ router.put("/outofstock/:id/:type", fetchuser, async (req, res) => {
       msg: "Product has been out of stock.",
       data: up,
     });
-    console.log(up);
-    console.log("--------------------");
+    // console.log(up);
+    // console.log("--------------------");
   } catch (err) {
     res
       .status(205)
@@ -437,13 +435,13 @@ router.put("/productVisible/:id/:type", fetchuser, async (req, res) => {
 
 router.delete("/deleteProduct/:id", fetchuser, async (req, res) => {
   try {
+    console.log("-----deleting product-----");
+
     let attr = await ProductSchema.findById(req.params.id);
+    // console.log("attr - ", attr);
+
     if (!attr) {
       return res.status(501).json({ status: "Failed", msg: "not found" });
-    }
-
-    if (attr.userid.toString() !== req.user.id) {
-      return res.status(500).json({ status: "Failed", msg: "Not Allowed" });
     }
 
     attr = await ProductSchema.findByIdAndDelete(req.params.id);
